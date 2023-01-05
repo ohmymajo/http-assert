@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -39,6 +40,18 @@ func GetValueType(v interface{}) string {
 		return "int"
 	case "float32", "float64":
 		return "float"
+	case "json.Number":
+		_, err := (v.(json.Number)).Int64()
+		if err == nil {
+			return "int"
+		}
+
+		_, err = (v.(json.Number)).Float64()
+		if err == nil {
+			return "float"
+		}
+
+		return ""
 	case "map[string]interface {}":
 		return "object"
 	default:

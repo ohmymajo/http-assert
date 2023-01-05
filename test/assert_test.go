@@ -74,7 +74,7 @@ func TestAssertHeaderFail(t *testing.T) {
 }
 
 func TestAssertBodyObjectHas(t *testing.T) {
-	b := []byte(`{"message": "Hello World"}`)
+	b := []byte(`{"message": "Hello World", "obj": {"str": "Hellow"}}`)
 
 	resp := http.Response{
 		Body: io.NopCloser(bytes.NewReader(b)),
@@ -82,7 +82,10 @@ func TestAssertBodyObjectHas(t *testing.T) {
 
 	http := assert.New(&resp)
 	httpBody := http.AssertBody()
-	val := httpBody.Has("message").Check()
+	val := httpBody.
+		Has("message").
+		Has("obj.str").
+		Check()
 	if !val {
 		t.Fail()
 	}
@@ -105,6 +108,45 @@ func TestAssertBodyObjectWhere(t *testing.T) {
 		Where("object.str", "Hello World").
 		Where("arr.0.str", "array").
 		Check()
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertBodyWhereType(t *testing.T) {
+	b := []byte(`{"int": 1, "str": "Hello", "obj": {"str": false}, "arr":[{"idx": 1.5}]}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereType("int", "int").
+		WhereType("str", "string").
+		WhereType("obj.str", "bool").
+		WhereType("arr.0.idx", "float").
+		Check()
+
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertHasLength(t *testing.T) {
+	b := []byte(`{"arr": [1, 2, 3]}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		HasLength("arr", 3).
+		Check()
+
 	if !val {
 		t.Fail()
 	}

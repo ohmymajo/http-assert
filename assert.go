@@ -2,7 +2,6 @@ package assert
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 	"strings"
 
@@ -41,8 +40,13 @@ func (h Http) AssertHeader() HttpJson {
 
 func (h Http) AssertBody() HttpJson {
 	var body interface{}
-	data, _ := io.ReadAll(h.Resp.Body)
-	json.Unmarshal(data, &body)
+
+	d := json.NewDecoder(h.Resp.Body)
+	d.UseNumber()
+	err := d.Decode(&body)
+	if err != nil {
+		panic("cannot decode json data")
+	}
 
 	return HttpJson{
 		Type:          "body",
@@ -56,20 +60,62 @@ func (h HttpJson) Has(fieldName string) HttpJson {
 	if h.Type == "header" && h.AssertCorrect {
 		correct = h.Header.Get(fieldName) != ""
 	} else if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
 		t := validation.GetBodyType(h.Body)
+
 		if t == "" {
 			panic("cannot read the response body")
 		} else if t == "object" {
-			b := h.Body.(map[string]interface{})
-			has := false
-			for key := range b {
-				if key == fieldName {
-					has = true
-					break
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key := range b {
+					if key == fieldName {
+						correct = true
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+				if v != nil {
+					correct = true
 				}
 			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
 
-			correct = has
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) HasLength(fieldName string, length int) HttpJson {
+	var correct bool
+	if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						correct = len(val.([]interface{})) == length
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+				if v != nil {
+					correct = len(v.([]interface{})) == length
+				}
+			}
 		} else {
 			panic("body should be JSON object")
 		}
@@ -113,6 +159,49 @@ func (h HttpJson) Where(fieldName string, value interface{}) HttpJson {
 
 				t = validation.GetValueType(value)
 				correct = validation.EqualValue(v, value, t)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) WhereType(fieldName, valueType string) HttpJson {
+	var correct bool
+	if h.Type == "header" && h.AssertCorrect {
+		hVal := h.Header.Get(fieldName)
+		t := validation.GetValueType(hVal)
+
+		correct = t == valueType
+	} else if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						t := validation.GetValueType(val)
+						correct = t == valueType
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+				t = validation.GetValueType(v)
+
+				correct = t == valueType
 			}
 		} else {
 			panic("body should be JSON object")
