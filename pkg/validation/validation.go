@@ -75,3 +75,37 @@ func EqualValue(a, b interface{}, aType string) bool {
 
 	return false
 }
+
+func EqualValueWithOP(a, b interface{}, op, aType string) bool {
+	if aType == "int" {
+		if op == "gt" {
+			valB, _ := strconv.Atoi(fmt.Sprintf("%v", b))
+			return a.(int) > valB
+		} else if op == "gte" {
+			valB, _ := strconv.Atoi(fmt.Sprintf("%v", b))
+			return a.(int) >= valB
+		} else if op == "lt" {
+			valB, _ := strconv.Atoi(fmt.Sprintf("%v", b))
+			return a.(int) < valB
+		} else if op == "lte" {
+			valB, _ := strconv.Atoi(fmt.Sprintf("%v", b))
+			return a.(int) <= valB
+		}
+	} else if aType == "float" {
+		if op == "gt" {
+			valB, _ := strconv.ParseFloat(fmt.Sprintf("%v", b), 64)
+			return a.(float64) > valB
+		} else if op == "gte" {
+			valB, _ := strconv.ParseFloat(fmt.Sprintf("%v", b), 64)
+			return a.(float64) >= valB
+		} else if op == "lt" {
+			valB, _ := strconv.ParseFloat(fmt.Sprintf("%v", b), 64)
+			return a.(float64) < valB
+		} else if op == "lte" {
+			valB, _ := strconv.ParseFloat(fmt.Sprintf("%v", b), 64)
+			return a.(float64) <= valB
+		}
+	}
+
+	return false
+}

@@ -143,22 +143,171 @@ func (h HttpJson) Where(fieldName string, value interface{}) HttpJson {
 		} else if t == "object" {
 			if len(f) == 1 {
 				b := h.Body.(map[string]interface{})
-				eq := false
 				for key, val := range b {
 					if key == fieldName {
 						vType := validation.GetValueType(value)
-						eq = validation.EqualValue(value, val, vType)
+						correct = validation.EqualValue(value, val, vType)
 
 						break
 					}
 				}
-
-				correct = eq
 			} else {
 				v := filter.Find(fieldName, h.Body)
 
 				t = validation.GetValueType(value)
 				correct = validation.EqualValue(v, value, t)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) WhereGte(fieldName string, value interface{}) HttpJson {
+	var correct bool
+	if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						vType := validation.GetValueType(value)
+						correct = validation.EqualValueWithOP(value, val, "gte", vType)
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+
+				vType := validation.GetValueType(value)
+				correct = validation.EqualValueWithOP(value, v, "gte", vType)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) WhereGt(fieldName string, value interface{}) HttpJson {
+	var correct bool
+	if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						vType := validation.GetValueType(value)
+						correct = validation.EqualValueWithOP(value, val, "gt", vType)
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+
+				vType := validation.GetValueType(value)
+				correct = validation.EqualValueWithOP(value, v, "gt", vType)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) WhereLte(fieldName string, value interface{}) HttpJson {
+	var correct bool
+	if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						vType := validation.GetValueType(value)
+						correct = validation.EqualValueWithOP(value, val, "lte", vType)
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+
+				vType := validation.GetValueType(value)
+				correct = validation.EqualValueWithOP(value, v, "lte", vType)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
+func (h HttpJson) WhereLt(fieldName string, value interface{}) HttpJson {
+	var correct bool
+	if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						vType := validation.GetValueType(value)
+						correct = validation.EqualValueWithOP(value, val, "lt", vType)
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+
+				vType := validation.GetValueType(value)
+				correct = validation.EqualValueWithOP(value, v, "lt", vType)
 			}
 		} else {
 			panic("body should be JSON object")

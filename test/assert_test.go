@@ -151,3 +151,153 @@ func TestAssertHasLength(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestAssertWhereGte(t *testing.T) {
+	b := []byte(`{"int": 2}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereGte("int", 3).
+		WhereGte("obj.int", 3).
+		Check()
+
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereGteFail(t *testing.T) {
+	b := []byte(`{"int": 2, "obj": {"int": 2}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereGte("int", 1).
+		WhereGte("int", 3).
+		Check()
+
+	if val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereGt(t *testing.T) {
+	b := []byte(`{"int": 2, "obj":{"int":2}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereGt("int", 3).
+		WhereGt("obj.int", 3).
+		Check()
+
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereGtFail(t *testing.T) {
+	b := []byte(`{"int": 2}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereGt("int", 2).
+		WhereGt("int", 3).
+		Check()
+
+	if val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereLte(t *testing.T) {
+	b := []byte(`{"int": 2, "obj":{"int":2}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereLte("int", 1).
+		WhereLte("obj.int", 1).
+		Check()
+
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereLteFail(t *testing.T) {
+	b := []byte(`{"int": 2}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereLte("int", 3).
+		Check()
+
+	if val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereLt(t *testing.T) {
+	b := []byte(`{"int": 2, "obj":{"int":2}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereLt("int", 1).
+		WhereLt("obj.int", 1).
+		Check()
+
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertWhereLtFail(t *testing.T) {
+	b := []byte(`{"int": 2}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereLt("int", 2).
+		Check()
+
+	if val {
+		t.Fail()
+	}
+}
