@@ -93,6 +93,57 @@ func (h HttpJson) Has(fieldName string) HttpJson {
 	}
 }
 
+func (h HttpJson) HasAll(fieldNames []string) HttpJson {
+	var correct bool
+	if h.Type == "header" && h.AssertCorrect {
+		for _, fieldName := range fieldNames {
+			if h.Header.Get(fieldName) == "" {
+				correct = false
+				break
+			}
+
+			correct = h.Header.Get(fieldName) != ""
+		}
+	} else if h.Type == "body" && h.AssertCorrect {
+		for _, fieldName := range fieldNames {
+			f := strings.Split(fieldName, ".")
+			t := validation.GetBodyType(h.Body)
+
+			if t == "" {
+				panic("cannot read the response body")
+			} else if t == "object" {
+				if len(f) == 1 {
+					b := h.Body.(map[string]interface{})
+					for key := range b {
+						if key != fieldName {
+							correct = false
+							break
+						}
+						correct = key == fieldName
+					}
+				} else {
+					v := filter.Find(fieldName, h.Body)
+					if v == nil {
+						correct = false
+						break
+					} else {
+						correct = true
+					}
+				}
+			} else {
+				panic("body should be JSON object")
+			}
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
 func (h HttpJson) HasLength(fieldName string, length int) HttpJson {
 	var correct bool
 	if h.Type == "body" && h.AssertCorrect {

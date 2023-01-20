@@ -91,6 +91,40 @@ func TestAssertBodyObjectHas(t *testing.T) {
 	}
 }
 
+func TestAssertBodyObjectHasAll(t *testing.T) {
+	b := []byte(`{"message": "Hello World", "obj": {"str": "Hellow"}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		HasAll([]string{"message", "obj", "obj.str"}).
+		Check()
+	if !val {
+		t.Fail()
+	}
+}
+
+func TestAssertBodyObjectHasAllFail(t *testing.T) {
+	b := []byte(`{"message": "Hello World", "obj": {"str": "Hellow"}}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		HasAll([]string{"message", "obj", "obj.strs"}).
+		Check()
+	if val {
+		t.Fail()
+	}
+}
+
 func TestAssertBodyObjectWhere(t *testing.T) {
 	b := []byte(`{"int": 123, "float": 1.5, "bool": false, "str": "Hello World", "object": {"str": "Hello World"}, "arr": [{"str": "array"}]}`)
 
