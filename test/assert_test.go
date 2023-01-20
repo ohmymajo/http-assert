@@ -113,6 +113,24 @@ func TestAssertBodyObjectWhere(t *testing.T) {
 	}
 }
 
+func TestAssertBodyObjectWhereNot(t *testing.T) {
+	b := []byte(`{"int": 123, "float": 1.5, "bool": false, "str": "Hello World", "object": {"str": "Hello World"}, "arr": [{"str": "array"}]}`)
+
+	resp := http.Response{
+		Body: io.NopCloser(bytes.NewReader(b)),
+	}
+
+	http := assert.New(&resp)
+	httpBody := http.AssertBody()
+	val := httpBody.
+		WhereNot("int", 1234).
+		WhereNot("object.str", "Hello Worlds").
+		Check()
+	if !val {
+		t.Fail()
+	}
+}
+
 func TestAssertBodyWhereType(t *testing.T) {
 	b := []byte(`{"int": 1, "str": "Hello", "obj": {"str": false}, "arr":[{"idx": 1.5}]}`)
 

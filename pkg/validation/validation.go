@@ -76,6 +76,23 @@ func EqualValue(a, b interface{}, aType string) bool {
 	return false
 }
 
+func NotEqualValue(a, b interface{}, aType string) bool {
+	if aType == "string" {
+		return a.(string) != b.(string)
+	} else if aType == "int" {
+		valA, _ := strconv.Atoi(fmt.Sprintf("%v", a))
+		valB, _ := strconv.Atoi(fmt.Sprintf("%v", b))
+		return valA != valB
+	} else if aType == "float" {
+		b, _ := strconv.ParseFloat(fmt.Sprintf("%v", b), 64)
+		return a.(float64) != b
+	} else if aType == "bool" {
+		return a.(bool) != b.(bool)
+	}
+
+	return false
+}
+
 func EqualValueWithOP(a, b interface{}, op, aType string) bool {
 	if aType == "int" {
 		if op == "gt" {

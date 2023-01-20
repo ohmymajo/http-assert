@@ -170,6 +170,47 @@ func (h HttpJson) Where(fieldName string, value interface{}) HttpJson {
 	}
 }
 
+func (h HttpJson) WhereNot(fieldName string, value interface{}) HttpJson {
+	var correct bool
+	if h.Type == "header" && h.AssertCorrect {
+		hVal := h.Header.Get(fieldName)
+		correct = hVal == value.(string)
+	} else if h.Type == "body" && h.AssertCorrect {
+		f := strings.Split(fieldName, ".")
+		t := validation.GetBodyType(h.Body)
+
+		if t == "" {
+			panic("cannot read the response body")
+		} else if t == "object" {
+			if len(f) == 1 {
+				b := h.Body.(map[string]interface{})
+				for key, val := range b {
+					if key == fieldName {
+						vType := validation.GetValueType(value)
+						correct = validation.NotEqualValue(value, val, vType)
+
+						break
+					}
+				}
+			} else {
+				v := filter.Find(fieldName, h.Body)
+
+				t = validation.GetValueType(value)
+				correct = validation.NotEqualValue(v, value, t)
+			}
+		} else {
+			panic("body should be JSON object")
+		}
+	}
+
+	return HttpJson{
+		Type:          h.Type,
+		Header:        h.Header,
+		Body:          h.Body,
+		AssertCorrect: correct,
+	}
+}
+
 func (h HttpJson) WhereGte(fieldName string, value interface{}) HttpJson {
 	var correct bool
 	if h.Type == "body" && h.AssertCorrect {
